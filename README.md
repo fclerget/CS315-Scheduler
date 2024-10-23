@@ -7,7 +7,8 @@ Demo C++ implementation of multiple operating system scheduling algorithms
 
 - Rate-monotonic and round-robin scheduler algorithms
 - Multiple task creation input modes
-- Object-oriented code, including inheritance 
+- Object-oriented code, including inheritance
+- Usage of doubly linked lists, pointers, and dereferencing
 - ASCII output interface for usability and debugging
 
 
