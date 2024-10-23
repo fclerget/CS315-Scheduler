@@ -18,5 +18,4 @@ private:
 public:
 	PriorityTask(int req, int freq);
 	int getFrequency();
-}
-
+};

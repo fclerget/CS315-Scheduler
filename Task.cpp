@@ -1,7 +1,7 @@
 #include "Task.h"
 #include <iostream>
 
-Task::inline Task(int req) { requested = req; }
+Task:: Task(int req) { requested = req; }
 
 int Task:: getRequested() {
 	return requested;
