@@ -14,10 +14,10 @@
 #pragma once
 #include "Task.h"
 
-struct Node {
+struct StackNode {
     Task taskData;
-    Node* nextTask;
-    Node* prevTask;  // It's doubly linked so I can print it easier
+    StackNode* nextTask;
+    StackNode* prevTask;  // It's doubly linked so I can print it easier
 };
 
 class Stack {
@@ -37,6 +37,6 @@ public:
     void printStack();  // Function to print the stack
     void runExample();  // Function to run the example
 private:
-    Node* head;  // Top of the stack
-    Node* tail;  // Bottom of the stack (new)
+    StackNode* head;  // Top of the stack
+    StackNode* tail;  // Bottom of the stack (new)
 };

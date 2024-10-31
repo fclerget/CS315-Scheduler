@@ -9,7 +9,6 @@
  * @date 10/23/24
  */
 
-#include "Task.h"
 #include "Stack.h"
 #include <stdio.h>  // For printf
 #include <stdlib.h> // For rand
@@ -26,7 +25,7 @@ Stack::~Stack() {
 
 // Push and Pop methods from top of stack
 void Stack::push(Task task) {
-    Node* newNode = new Node{task, head, nullptr};  // Create new node with task data
+    StackNode* newNode = new StackNode{task, head, nullptr};  // Create new node with task data
 
     // If stack isn't empty, update previous head's prevTask
     if (head != nullptr) {
@@ -40,9 +39,10 @@ void Stack::push(Task task) {
     }
 }
 
+// Pop method to remove task from the head (top) of the stack
 void Stack::pop() {
     if (!isEmpty()) {
-        Node* temp = head;  // Save the current head
+        StackNode* temp = head;  // Save the current head
         head = head->nextTask;  // Move head to the next task
 
         if (head != nullptr) { 
@@ -76,7 +76,7 @@ bool Stack::isEmpty() {
 // Function to print the stack (bottom to top for easier reading)
 void Stack::printStack() {
     printf("| ");
-    Node* current = tail;
+    StackNode* current = tail;
     while (current != nullptr) {
         printf("[%d, %d] ", current->taskData.getRequested(), current->taskData.getServiced());
         current = current->prevTask;  // Move towards the top of the stack
@@ -101,6 +101,9 @@ void Stack::runExample() {
             push(newTask);
             taskCounter++;  // Increment task counter
         };
+
+        // Print the current stack
+        printStack();
         
         // Iterate top task's serviced counter
         if (!isEmpty()) {
@@ -115,9 +118,6 @@ void Stack::runExample() {
                 currentTask->setServiced(currentTask->getServiced() + 1);
             }
         }
-
-        // Print the current stack
-        printStack();
 
         timeCounter++;  // Increment time counter
     }

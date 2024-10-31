@@ -13,11 +13,11 @@
 #pragma once
 #include "Task.h"
 
-struct Node {
+struct QueueNode {
     Task taskData;
-    Node* prevTask;
+    QueueNode* nextTask; 
+    QueueNode* prevTask;
 };
-
 
 class Queue {
 public:
@@ -30,10 +30,12 @@ public:
     void push(Task task);
     void pop();
 
+    Task* top();     // Pointer for front task, so it can be accessed without popping
     bool isEmpty();  // Bool to check if the queue is empty
 
     void printQueue();  // Function to print the queue
     void runExample();  // Function to run the example
 private:
-    Node* head;  // Top of the queue
+    QueueNode* head;  // Front of the queue
+    QueueNode* tail;  // End of the queue
 };
