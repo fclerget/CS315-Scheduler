@@ -15,7 +15,7 @@
 
 struct Node {
     Task taskData;
-    Node* nextTask;
+    Node* prevTask;
 };
 
 
@@ -36,5 +36,4 @@ public:
     void runExample();  // Function to run the example
 private:
     Node* head;  // Top of the queue
-    Node* tail;  // Bottom of the queue (new)
 };
