@@ -14,19 +14,23 @@
  * @brief Main function
  *
  * Main scheduler demo function.
- * Allows the user to select and run either the Stack or Queue scheduler example.
+ * Allows the user to select and run either the Stack, Queue, or Rate Monotonic Structured scheduler example.
  *
- * @date 10/23/24
+ * @date 10/31/24
+ * @authors
+ * Marcello Novak, Fiya Clerget
  */
 
 #include "Stack.h"
 #include "Queue.h"
+#include "RateMonotonic.h"  // Include Rate Monotonic Scheduler
 #include <iostream>
 
 void displayMenu() {
     std::cout << "Select a scheduler to run:" << std::endl;
     std::cout << "S - Stack" << std::endl;
     std::cout << "Q - Queue" << std::endl;
+    std::cout << "1 - Rate Monotonic Structured" << std::endl;  // New option
 }
 
 int main() {
@@ -47,8 +51,12 @@ int main() {
             Queue queueScheduler;
             queueScheduler.runExample();
             validInput = true;
+        } else if (choice == '1') {  // Run Rate Monotonic Structured example
+            RateMonotonicScheduler rmsScheduler;
+            rmsScheduler.runExampleStructured();  // Run the structured example
+            validInput = true;
         } else {
-            std::cout << "Invalid input. Please enter 'S' for Stack or 'Q' for Queue." << std::endl;
+            std::cout << "Invalid input. Please enter 'S' for Stack, 'Q' for Queue, or '1' for Rate Monotonic Structured." << std::endl;
         }
     }
 

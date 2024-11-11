@@ -5,8 +5,8 @@
  * Example of a scheduler implemented using a queue.
  * Intended to show why a queue is a decent choice for a scheduler.
  *
- * @date 10/23/24
- * @authors Fiya Clerget and Marcello Novak
+ * @date 10/31/24
+ * @authors Fiya Clerget, Marcello Novak
  */
 
 #include "Queue.h"

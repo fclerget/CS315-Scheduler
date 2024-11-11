@@ -6,7 +6,7 @@
  * PriorityTask is a subclass of Task, adding a frequency attribute.
  * Also includes getter method definitions for both.
  *
- * @date 10/23/24
+ * @date 10/31/24
  * @author Fiya Clerget, Marcello Novak
  */
 

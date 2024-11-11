@@ -6,7 +6,7 @@
  * The stack class is used to store tasks in a LIFO order.
  * Includes a top method to access the top task without popping.
  *
- * @date 10/23/24
+ * @date 10/31/24
  * @author Marcello Novak
  */
 

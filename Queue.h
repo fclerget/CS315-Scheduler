@@ -2,11 +2,11 @@
  * @file Queue.h
  * @brief Contains the queue class definitions
  *
- * Contains the definition of the squeue class and the node struct.
+ * Contains the definition of the queue class and the node struct.
  * The queue class is used to store tasks in a FIFO order.
  *
- * @date 10/29/24
- * @author Fiya Clerget
+ * @date 10/31/24
+ * @author Fiya Clerget, Marcello Novak
  */
 
 

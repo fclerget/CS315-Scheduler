@@ -4,9 +4,9 @@
  *
  * Example of a scheduler implemented using a stack.
  * Intended to show why a stack is not a good choice for a scheduler.
- *
+ * 
+ * @date 10/31/24
  * @author Marcello Novak
- * @date 10/23/24
  */
 
 #include "Stack.h"
