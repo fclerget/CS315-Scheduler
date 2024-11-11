@@ -14,31 +14,30 @@
 #include "Task.h"
 #include <vector>
 #include <iostream>
+using namespace std;
 
 struct Thread {
     Queue taskQueue;
+    int priority;   // Priority rank for the thread
+    int length;     // Length of the task created
     int frequency;  // Period of task execution for this thread
-    int threadID;   // Unique identifier for the thread
 };
 
 class RateMonotonicScheduler {
-public:
+    public:
+        // Constructor and Destructor
+        RateMonotonicScheduler();
+        ~RateMonotonicScheduler();
 
-    // Constructor and Destructor
-    RateMonotonicScheduler();
-    ~RateMonotonicScheduler();
+        // Functions to run the examples
+        void runExampleStructured(); 
+        void runExampleRandom();    
+        
+    protected:
+        vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
+        vector<int> nextReleaseTimes; // Tracks the next release time for each thread
 
-    // Functions to run the examples
-    void runExampleStructured(); 
-    void runExampleRandom();    
-protected:
-
-    std::vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
-    std::vector<int> nextReleaseTimes; // Tracks the next release time for each thread
-
-    void addTask(int threadID);
-    void incrementTopTask(int threadID);  // New method to increment top task for a given thread
-
-    
+        void addTask(int threadID);
+        void incrementTopTask(int threadID);  // New method to increment top task for a given thread
     
 };

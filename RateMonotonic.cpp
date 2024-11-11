@@ -9,16 +9,18 @@
  * @author Marcello Novak
  */
 
+#include <algorithm>  // For find_if
 #include "RateMonotonic.h"
+using namespace std;
 
 // Constructor initializes threads and next release times
 RateMonotonicScheduler::RateMonotonicScheduler() {
     // Initialize threads with their respective frequencies, queues, and IDs
     threads = {
-        {Queue(), 3, 1},   // Thread 1: frequency 3
-        {Queue(), 6, 2},   // Thread 2: frequency 6
-        {Queue(), 12, 3},  // Thread 3: frequency 12
-        {Queue(), 24, 4}   // Thread 4: frequency 24
+        {Queue(), 1, 1, 3},   // Thread 1: size 1, frequency 3
+        {Queue(), 2, 2, 6},   // Thread 2: size 1, frequency 6
+        {Queue(), 3, 2, 12},  // Thread 3: size 2, frequency 12
+        {Queue(), 4, 4, 24}   // Thread 4: size 4, frequency 24
     };
 
     // Set initial next release times based on the threads' frequencies
@@ -38,22 +40,21 @@ RateMonotonicScheduler::~RateMonotonicScheduler() {
 
 // Main scheduler loop with scrolling thread status display
 void RateMonotonicScheduler::runExampleStructured() {
-    // Frame boundary and counters for tasks created and serviced
-    const int frameBoundary = 24;
-    int taskCounter = 0;
-    int servicedCounter = 0;
+    const int frameBoundary = 24;  // Global frame boundary for the scheduler
+    int taskCounter = 0;     // Counter for tasks created and serviced
+    int servicedCounter = 0;  
 
     int timeCounter = 0;
-    while (timeCounter < 10000) {
+    while (timeCounter < 10008) {
         // Reset to the start of the frame boundary every 24 units
         if (timeCounter % frameBoundary == 0) {
-            std::cout << "\n--- New Frame (24 units) ---\n";
+            cout << "| | | | | New\n";
         }
 
         // Add tasks to each thread's queue based on release times within the frame
         for (size_t i = 0; i < threads.size(); ++i) {
             if (timeCounter >= nextReleaseTimes[i]) {
-                addTask(threads[i].threadID);
+                addTask(threads[i].priority);
                 nextReleaseTimes[i] += threads[i].frequency;  // Schedule the next release within frame
                 taskCounter++;  // Increment task counter when a task is created
             }
@@ -61,36 +62,37 @@ void RateMonotonicScheduler::runExampleStructured() {
 
         // Get and service the highest-priority task
         Task* highestPriorityTask = nullptr;
-        int highestPriorityThreadID = -1;
+        int highestPriorityThreadIndex = -1;
 
-        // Find the highest-priority task across all threads
-        for (auto& thread : threads) {
+        // Find the highest-priority task across all threads based on priority
+        for (size_t i = 0; i < threads.size(); ++i) {
+            auto& thread = threads[i];
             if (!thread.taskQueue.isEmpty()) {
                 Task* topTask = thread.taskQueue.top();
-                if (highestPriorityTask == nullptr || thread.frequency < threads[highestPriorityThreadID - 1].frequency) {
+                if (highestPriorityTask == nullptr || thread.priority < threads[highestPriorityThreadIndex].priority) {
                     highestPriorityTask = topTask;
-                    highestPriorityThreadID = thread.threadID;
+                    highestPriorityThreadIndex = i;
                 }
             }
         }
 
         // Print the state of each thread (X for active, - for inactive)
-        for (auto& thread : threads) {
-            if (highestPriorityTask != nullptr && thread.threadID == highestPriorityThreadID) {
-                std::cout << "X ";
+        for (const auto& thread : threads) {
+            if (highestPriorityTask != nullptr && thread.priority == threads[highestPriorityThreadIndex].priority) {
+                cout << "X ";
             } else {
-                std::cout << "- ";
+                cout << "- ";
             }
         }
-        std::cout << "| " << (timeCounter % frameBoundary) + 1 << std::endl;  // Print frame time step
+        cout << "| " << (timeCounter % frameBoundary) + 1 << endl;  // Print frame time step
 
         // If we have a task to service, increment or complete it
-        if (highestPriorityTask != nullptr && highestPriorityThreadID != -1) {
-            incrementTopTask(highestPriorityThreadID);  // Increment top task of the selected thread
+        if (highestPriorityTask != nullptr && highestPriorityThreadIndex != -1) {
+            incrementTopTask(threads[highestPriorityThreadIndex].priority);  // Increment top task of the selected thread
 
             // Check if task has completed
             if (highestPriorityTask->getServiced() == highestPriorityTask->getRequested()) {
-                threads[highestPriorityThreadID - 1].taskQueue.pop();
+                threads[highestPriorityThreadIndex].taskQueue.pop();
                 servicedCounter++;  // Increment serviced counter when a task completes
             }
         }
@@ -99,30 +101,32 @@ void RateMonotonicScheduler::runExampleStructured() {
     }
 
     // Print the total counts after the scheduler run
-    std::cout << "Total tasks created: " << taskCounter << std::endl;
-    std::cout << "Total tasks serviced: " << servicedCounter << std::endl;
+    cout << "Total tasks created: " << taskCounter << endl;
+    cout << "Total tasks serviced: " << servicedCounter << endl;
 }
 
 // Add a new task to the specified thread's queue
-void RateMonotonicScheduler::addTask(int threadID) {
-    int requestedTime;
+void RateMonotonicScheduler::addTask(int priority) {
+    // Find the thread by priority and get its length as requested time
+    auto it = find_if(threads.begin(), threads.end(), [priority](const Thread& t) {
+        return t.priority == priority;
+    });
 
-    // Determine the requested time based on the thread frequency
-    switch (threads[static_cast<size_t>(threadID - 1)].frequency) {
-        case 3: requestedTime = 1; break;
-        case 6: requestedTime = 2; break;
-        case 12: requestedTime = 4; break;
-        case 24: requestedTime = 8; break;
+    if (it != threads.end()) {
+        int requestedTime = it->length;  // Use the thread's length as the requested time for the task
+        it->taskQueue.push(Task(requestedTime));
     }
-
-    // Use the Queue's `push` method to add a new Task with only `requestedTime`
-    threads[static_cast<size_t>(threadID - 1)].taskQueue.push(Task(requestedTime));
 }
 
 // Increment the `serviced` field of the top task in the specified thread
-void RateMonotonicScheduler::incrementTopTask(int threadID) {
-    if (!threads[static_cast<size_t>(threadID - 1)].taskQueue.isEmpty()) {
-        Task* topTask = threads[static_cast<size_t>(threadID - 1)].taskQueue.top();
+void RateMonotonicScheduler::incrementTopTask(int priority) {
+    // Find the thread by priority
+    auto it = find_if(threads.begin(), threads.end(), [priority](const Thread& t) {
+        return t.priority == priority;
+    });
+
+    if (it != threads.end() && !it->taskQueue.isEmpty()) {
+        Task* topTask = it->taskQueue.top();
         topTask->setServiced(topTask->getServiced() + 1);
     }
 }
