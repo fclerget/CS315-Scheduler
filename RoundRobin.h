@@ -11,18 +11,12 @@
  */
 
 #include "Queue.h"
+#include "SchedulerCommon.h"
+#include "RateMonotonic.h"
 #include "Task.h"
 #include <vector>
 #include <iostream>
 using namespace std;
-
-struct Thread {
-    Queue taskQueue;
-    int priority;   // fixed priority for the thread
-    int length;     // Length of the task created
-    int frequency;  // fixed period of task execution for this thread
-    // In Round Robin scheduling all threads have the same priority and frequency
-};
 
 class RoundRobinScheduler {
     public:

@@ -11,17 +11,11 @@
 
 #pragma once
 #include "Queue.h"
+#include "SchedulerCommon.h"
 #include "Task.h"
 #include <vector>
 #include <iostream>
 using namespace std;
-
-struct Thread {
-    Queue taskQueue;
-    int priority;   // Priority rank for the thread
-    int length;     // Length of the task created
-    int frequency;  // Period of task execution for this thread
-};
 
 class RateMonotonicScheduler {
     public:

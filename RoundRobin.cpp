@@ -11,6 +11,7 @@
 
 #include <algorithm>  // For find_if
 #include "RoundRobin.h"
+#include "ASCII.h"
 using namespace std;
 
 // Constructor initializes threads and next release times
@@ -29,7 +30,93 @@ RoundRobinScheduler::RoundRobinScheduler() {
     }
 }
 
+// Main scheduler loop with scrolling thread status display
+void RoundRobinScheduler::runExampleStructured() {
+    const int frameBoundary = 24;
+    int taskCounter = 0;
+    int servicedCounter = 0;
 
+    int timeCounter = 0;
+    while (timeCounter < 10008) {
+        if (timeCounter % frameBoundary == 0) {
+            setColor(COLOR_WHITE);
+            cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
+        }
+
+        // Track which threads have new tasks created in this time unit
+        vector<bool> taskCreated(threads.size(), false);
+
+        // Add tasks based on release times
+        for (size_t i = 0; i < threads.size(); ++i) {
+            if (timeCounter >= nextReleaseTimes[i]) {
+                addTask(threads[i].priority);
+                nextReleaseTimes[i] += threads[i].frequency;
+                taskCounter++;
+                taskCreated[i] = true;  // Mark that a task was created for this thread
+            }
+        }
+
+        // Get and service the highest-priority task
+        Task* highestPriorityTask = nullptr;
+        int highestPriorityThreadIndex = -1;
+
+        // Find the highest-priority task
+        for (size_t i = 0; i < threads.size(); ++i) {
+            auto& thread = threads[i];
+            if (!thread.taskQueue.isEmpty()) {
+                Task* topTask = thread.taskQueue.top();
+                if (highestPriorityTask == nullptr || thread.priority < threads[static_cast<size_t>(highestPriorityThreadIndex)].priority) {
+                    highestPriorityTask = topTask;
+                    highestPriorityThreadIndex = static_cast<int>(i);
+                }
+            }
+        }
+
+        // Display thread statuses
+        for (size_t i = 0; i < threads.size(); ++i) {
+            bool isRunning = (i == static_cast<size_t>(highestPriorityThreadIndex));
+            bool isCreated = taskCreated[i];
+
+            if (isRunning && isCreated) {
+                // Turquoise if a task is both created and executed in this time unit
+                setColor(COLOR_TURQUOISE);
+                cout << "▓▒░";
+            } else if (isRunning) {
+                // Green if this is the highest-priority task running
+                setColor(COLOR_GREEN);
+                cout << "▓▒░";
+            } else if (isCreated && !isRunning) {
+                // Purple if a task is created but preempted by a higher-priority task
+                setColor(COLOR_YELLOW);
+                cout << "▓▒░";
+            } else if (!threads[i].taskQueue.isEmpty() && i > static_cast<size_t>(highestPriorityThreadIndex)) {
+                // Red only if a lower-priority task is preempted (higher threads are never preempted by lower threads)
+                setColor(COLOR_RED);
+                cout << "▓▒░";
+            } else {
+                // Gray if no tasks are in the queue or the thread isn't preempted
+                setColor(COLOR_GRAY);
+                cout << "▒▒▒";
+            }
+        }
+        setColor(COLOR_WHITE);
+        cout << " | " << (timeCounter % frameBoundary) + 1 << endl;
+
+        if (highestPriorityTask != nullptr && highestPriorityThreadIndex != -1) {
+            incrementTopTask(threads[static_cast<size_t>(highestPriorityThreadIndex)].priority);
+
+            if (highestPriorityTask->getServiced() == highestPriorityTask->getRequested()) {
+                threads[static_cast<size_t>(highestPriorityThreadIndex)].taskQueue.pop();
+                servicedCounter++;
+            }
+        }
+
+        timeCounter++;
+    }
+
+    cout << "Total tasks created: " << taskCounter << endl;
+    cout << "Total tasks serviced: " << servicedCounter << endl;
+}
 
 // Add a new task to the specified thread's queue
 void RoundRobinScheduler::addTask(int length) {

@@ -21,9 +21,11 @@
  * Marcello Novak, Fiya Clerget
  */
 
+#include "RoundRobin.h"
 #include "Stack.h"
 #include "Queue.h"
-#include "RateMonotonic.h"  // Include Rate Monotonic Scheduler
+#include "RateMonotonic.h" // Include Rate Monotonic Scheduler
+#include "RoundRobin.h"2
 #include <iostream>
 
 void displayMenu() {
@@ -31,6 +33,7 @@ void displayMenu() {
     std::cout << "S - Stack" << std::endl;
     std::cout << "Q - Queue" << std::endl;
     std::cout << "1 - Rate Monotonic Structured" << std::endl;  // New option
+    std::cout << "2 - Round Robin Structured" << std::endl;
 }
 
 int main() {
@@ -57,7 +60,11 @@ int main() {
             RateMonotonicScheduler rmsScheduler;
             rmsScheduler.runExampleStructured();  // Run the structured example
             validInput = true;
-        } else {
+        } else if (choice == '2') {  // Run Round Robin Structured example
+            RoundRobinScheduler rrScheduler;
+            rrScheduler.runExampleStructured();  // Run the structured example
+            validInput = true;
+        }else {
             std::cout << "Invalid input. Please enter 'S' for Stack, 'Q' for Queue, or '1' for Rate Monotonic Structured." << std::endl;
         }
     }
