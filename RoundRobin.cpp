@@ -19,9 +19,9 @@ RoundRobinScheduler::RoundRobinScheduler() {
     // Initialize threads with their respective frequencies, queues, and IDs
     threads = {
         {Queue(), 1, 1, 4},   // Thread 1: size 1, frequency 3
-        {Queue(), 1, 2, 4},   // Thread 2: size 1, frequency 6
-        {Queue(), 1, 4, 4},  // Thread 3: size 2, frequency 12
-        {Queue(), 1, 6, 4}   // Thread 4: size 4, frequency 24
+        {Queue(), 2, 2, 4},   // Thread 2: size 1, frequency 6
+        {Queue(), 3, 4, 4},  // Thread 3: size 2, frequency 12
+        {Queue(), 4, 6, 4}   // Thread 4: size 4, frequency 24
     };
 
     // Set initial next release times based on the threads' lengths

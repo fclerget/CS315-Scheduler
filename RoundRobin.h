@@ -25,8 +25,7 @@ class RoundRobinScheduler {
         ~RoundRobinScheduler();
 
         // Functions to run the examples
-        void runExampleStructured(); 
-        void runExampleRandom();    
+        void runExampleStructured();   
         
     protected:
         vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
