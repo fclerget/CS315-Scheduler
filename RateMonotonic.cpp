@@ -9,23 +9,11 @@
  */
 
 #include "RateMonotonic.h"
+#include "ASCII.h"    // For coloring
 #include <algorithm>  // For find_if
 
+
 using namespace std;
-
-// ANSI Color Codes for Console Output
-const string COLOR_WHITE = "\033[0m";       // Reset color
-const string COLOR_GREEN = "\033[32m";      // Thread running
-const string COLOR_RED = "\033[31m";        // Preempted thread
-const string COLOR_GRAY = "\033[90m";       // Inactive thread
-const string COLOR_BLUE = "\033[34m";       // New task created
-const string COLOR_TURQUOISE = "\033[36m";  // Task created and running
-const string COLOR_YELLOW = "\033[33m";     // Task created but preempted
-
-// Function to set color using ANSI codes
-void setColor(const string& colorCode) {
-    cout << colorCode;
-}
 
 // Constructor initializes threads and next release times
 RateMonotonicScheduler::RateMonotonicScheduler() {
@@ -118,7 +106,7 @@ void RateMonotonicScheduler::runExampleStructured() {
             } else {
                 // Gray if no tasks are in the queue or the thread isn't preempted
                 setColor(COLOR_GRAY);
-                cout << "▒▒▒";
+                cout << "░░░";
             }
         }
         setColor(COLOR_WHITE);
