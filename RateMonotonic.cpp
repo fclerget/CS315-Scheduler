@@ -6,12 +6,26 @@
  * Uses 4 threads using "Queues" to simulate a rate monotonic scheduler.
  * 
  * @date 10/31/24
- * @author Marcello Novak
  */
 
-#include <algorithm>  // For find_if
 #include "RateMonotonic.h"
+#include <algorithm>  // For find_if
+
 using namespace std;
+
+// ANSI Color Codes for Console Output
+const string COLOR_WHITE = "\033[0m";       // Reset color
+const string COLOR_GREEN = "\033[32m";      // Thread running
+const string COLOR_RED = "\033[31m";        // Preempted thread
+const string COLOR_GRAY = "\033[90m";       // Inactive thread
+const string COLOR_BLUE = "\033[34m";       // New task created
+const string COLOR_TURQUOISE = "\033[36m";  // Task created and running
+const string COLOR_YELLOW = "\033[33m";     // Task created but preempted
+
+// Function to set color using ANSI codes
+void setColor(const string& colorCode) {
+    cout << colorCode;
+}
 
 // Constructor initializes threads and next release times
 RateMonotonicScheduler::RateMonotonicScheduler() {
@@ -40,23 +54,27 @@ RateMonotonicScheduler::~RateMonotonicScheduler() {
 
 // Main scheduler loop with scrolling thread status display
 void RateMonotonicScheduler::runExampleStructured() {
-    const int frameBoundary = 24;  // Global frame boundary for the scheduler
-    int taskCounter = 0;     // Counter for tasks created and serviced
-    int servicedCounter = 0;  
+    const int frameBoundary = 24;
+    int taskCounter = 0;
+    int servicedCounter = 0;
 
     int timeCounter = 0;
     while (timeCounter < 10008) {
-        // Reset to the start of the frame boundary every 24 units
         if (timeCounter % frameBoundary == 0) {
-            cout << "| | | | | New\n";
+            setColor(COLOR_WHITE);
+            cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
         }
 
-        // Add tasks to each thread's queue based on release times within the frame
+        // Track which threads have new tasks created in this time unit
+        vector<bool> taskCreated(threads.size(), false);
+
+        // Add tasks based on release times
         for (size_t i = 0; i < threads.size(); ++i) {
             if (timeCounter >= nextReleaseTimes[i]) {
                 addTask(threads[i].priority);
-                nextReleaseTimes[i] += threads[i].frequency;  // Schedule the next release within frame
-                taskCounter++;  // Increment task counter when a task is created
+                nextReleaseTimes[i] += threads[i].frequency;
+                taskCounter++;
+                taskCreated[i] = true;  // Mark that a task was created for this thread
             }
         }
 
@@ -64,63 +82,76 @@ void RateMonotonicScheduler::runExampleStructured() {
         Task* highestPriorityTask = nullptr;
         int highestPriorityThreadIndex = -1;
 
-        // Find the highest-priority task across all threads based on priority
+        // Find the highest-priority task
         for (size_t i = 0; i < threads.size(); ++i) {
             auto& thread = threads[i];
             if (!thread.taskQueue.isEmpty()) {
                 Task* topTask = thread.taskQueue.top();
-                if (highestPriorityTask == nullptr || thread.priority < threads[highestPriorityThreadIndex].priority) {
+                if (highestPriorityTask == nullptr || thread.priority < threads[static_cast<size_t>(highestPriorityThreadIndex)].priority) {
                     highestPriorityTask = topTask;
-                    highestPriorityThreadIndex = i;
+                    highestPriorityThreadIndex = static_cast<int>(i);
                 }
             }
         }
 
-        // Print the state of each thread (X for active, - for inactive)
-        for (const auto& thread : threads) {
-            if (highestPriorityTask != nullptr && thread.priority == threads[highestPriorityThreadIndex].priority) {
-                cout << "X ";
+        // Display thread statuses
+        for (size_t i = 0; i < threads.size(); ++i) {
+            bool isRunning = (i == static_cast<size_t>(highestPriorityThreadIndex));
+            bool isCreated = taskCreated[i];
+
+            if (isRunning && isCreated) {
+                // Turquoise if a task is both created and executed in this time unit
+                setColor(COLOR_TURQUOISE);
+                cout << "▓▒░";
+            } else if (isRunning) {
+                // Green if this is the highest-priority task running
+                setColor(COLOR_GREEN);
+                cout << "▓▒░";
+            } else if (isCreated && !isRunning) {
+                // Purple if a task is created but preempted by a higher-priority task
+                setColor(COLOR_YELLOW);
+                cout << "▓▒░";
+            } else if (!threads[i].taskQueue.isEmpty() && i > static_cast<size_t>(highestPriorityThreadIndex)) {
+                // Red only if a lower-priority task is preempted (higher threads are never preempted by lower threads)
+                setColor(COLOR_RED);
+                cout << "▓▒░";
             } else {
-                cout << "- ";
+                // Gray if no tasks are in the queue or the thread isn't preempted
+                setColor(COLOR_GRAY);
+                cout << "▒▒▒";
             }
         }
-        cout << "| " << (timeCounter % frameBoundary) + 1 << endl;  // Print frame time step
+        setColor(COLOR_WHITE);
+        cout << " | " << (timeCounter % frameBoundary) + 1 << endl;
 
-        // If we have a task to service, increment or complete it
         if (highestPriorityTask != nullptr && highestPriorityThreadIndex != -1) {
-            incrementTopTask(threads[highestPriorityThreadIndex].priority);  // Increment top task of the selected thread
+            incrementTopTask(threads[static_cast<size_t>(highestPriorityThreadIndex)].priority);
 
-            // Check if task has completed
             if (highestPriorityTask->getServiced() == highestPriorityTask->getRequested()) {
-                threads[highestPriorityThreadIndex].taskQueue.pop();
-                servicedCounter++;  // Increment serviced counter when a task completes
+                threads[static_cast<size_t>(highestPriorityThreadIndex)].taskQueue.pop();
+                servicedCounter++;
             }
         }
 
         timeCounter++;
     }
 
-    // Print the total counts after the scheduler run
     cout << "Total tasks created: " << taskCounter << endl;
     cout << "Total tasks serviced: " << servicedCounter << endl;
 }
 
-// Add a new task to the specified thread's queue
 void RateMonotonicScheduler::addTask(int priority) {
-    // Find the thread by priority and get its length as requested time
     auto it = find_if(threads.begin(), threads.end(), [priority](const Thread& t) {
         return t.priority == priority;
     });
 
     if (it != threads.end()) {
-        int requestedTime = it->length;  // Use the thread's length as the requested time for the task
+        int requestedTime = it->length;
         it->taskQueue.push(Task(requestedTime));
     }
 }
 
-// Increment the `serviced` field of the top task in the specified thread
 void RateMonotonicScheduler::incrementTopTask(int priority) {
-    // Find the thread by priority
     auto it = find_if(threads.begin(), threads.end(), [priority](const Thread& t) {
         return t.priority == priority;
     });

@@ -34,6 +34,8 @@ void displayMenu() {
 }
 
 int main() {
+    system("chcp 65001"); // Set UTF-8 code page for Windows cmd
+
     char choice;
     bool validInput = false;
 
