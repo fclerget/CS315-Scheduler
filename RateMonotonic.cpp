@@ -119,7 +119,7 @@ void RateMonotonicScheduler::runExample() {
             }
         }
         setColor(COLOR_WHITE);
-        cout << " | " << (timeCounter % frameBoundary) + 1 << endl;
+        cout << " | " << (timeCounter + 1) << endl;
 
         if (highestPriorityTask != nullptr && highestPriorityThreadIndex != -1) {
             incrementTopTask(threads[static_cast<size_t>(highestPriorityThreadIndex)].priority);

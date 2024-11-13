@@ -49,7 +49,7 @@ void RoundRobinScheduler::runExample() {
     int servicedCounter = 0;
 
     int timeCounter = 0;
-    while (timeCounter < 120) {
+    while (timeCounter < 10008) {
         if (timeCounter % frameBoundary == 0) {
             setColor(COLOR_WHITE);
             cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
