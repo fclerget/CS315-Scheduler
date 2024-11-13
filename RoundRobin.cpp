@@ -18,18 +18,18 @@ RoundRobinScheduler::RoundRobinScheduler(ExampleType exampleType) : currentThrea
     if (exampleType == ExampleType::STRUCTURED) {
         // Structured example initialization
         threads = {
-            {Queue(), 1, 1, 24},   // Thread 1: size 1, freq 24
-            {Queue(), 2, 2, 24},   // Thread 2: size 2, freq 24
-            {Queue(), 3, 4, 24},   // Thread 3: size 4, freq 24
-            {Queue(), 4, 6, 24}    // Thread 4: size 6, freq 24
+            {Queue(), 1, 2, 24},   // Thread 1: size 1, freq 24
+            {Queue(), 2, 4, 24},   // Thread 2: size 2, freq 24
+            {Queue(), 3, 6, 24},   // Thread 3: size 4, freq 24
+            {Queue(), 4, 8, 24}    // Thread 4: size 6, freq 24
         };
     } else if (exampleType == ExampleType::STARVED) {
         // Starved example initialization
         threads = {
             {Queue(), 1, 1, 8},   // Thread 1: size 1, freq 8
-            {Queue(), 2, 1, 8},   // Thread 2: size 1, freq 8
-            {Queue(), 3, 4, 8},   // Thread 3: size 4, freq 8
-            {Queue(), 4, 1, 8}    // Thread 4: size 1, freq 8
+            {Queue(), 2, 3, 8},   // Thread 2: size 1, freq 8
+            {Queue(), 3, 2, 8},   // Thread 3: size 4, freq 8
+            {Queue(), 4, 8, 8}    // Thread 4: size 1, freq 8
         };
     }
 
@@ -41,12 +41,15 @@ RoundRobinScheduler::RoundRobinScheduler(ExampleType exampleType) : currentThrea
 
 // Main scheduler loop with scrolling thread status display
 void RoundRobinScheduler::runExample() {
-    const int frameBoundary = 24;
+    const int frameBoundary = 24;   
+    const int timeQuantum = 4;
+    int currentQuantum = 0;
+
     int taskCounter = 0;
     int servicedCounter = 0;
 
     int timeCounter = 0;
-    while (timeCounter < 10008) {
+    while (timeCounter < 120) {
         if (timeCounter % frameBoundary == 0) {
             setColor(COLOR_WHITE);
             cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
@@ -57,17 +60,36 @@ void RoundRobinScheduler::runExample() {
 
         // Add tasks based on release times
         for (size_t i = 0; i < threads.size(); ++i) {
-            if (timeCounter >= nextReleaseTimes[i]) {
-                addTask(i);  // Pass thread index instead of size
-                nextReleaseTimes[i] += threads[i].frequency;
+            if (timeCounter % threads[i].frequency == 0) {
+                addTask(i);  // Pass thread index
                 taskCounter++;
                 taskCreated[i] = true;  // Mark that a task was created for this thread
             }
         }
 
-        // Only service the current thread in strict round-robin order
-        auto& currentThread = threads[currentThreadIndex];
-        bool taskExists = !currentThread.taskQueue.isEmpty();
+        size_t checkedThreads = 0;
+        bool taskExists = false;
+
+        // Find the next thread with a task
+        while (checkedThreads < threads.size()) {
+            auto& currentThread = threads[currentThreadIndex];
+            taskExists = !currentThread.taskQueue.isEmpty();
+
+            if (taskExists) {
+                break;  // Found a thread with tasks
+            } else {
+                // Color it orange in display logic
+                // Move to next thread
+                currentThreadIndex = (currentThreadIndex + 1) % threads.size();
+                checkedThreads++;
+            }
+        }
+
+        // If no threads have tasks, we can idle or continue
+        if (checkedThreads == threads.size() && !taskExists) {
+            // All threads are empty; you may choose to idle here
+            // For now, we'll proceed to display and increment timeCounter
+        }
 
         // Display thread statuses
         for (size_t i = 0; i < threads.size(); ++i) {
@@ -102,22 +124,33 @@ void RoundRobinScheduler::runExample() {
             }
         }
         setColor(COLOR_WHITE);
-        cout << " | " << (timeCounter % frameBoundary) + 1 << endl;
+        cout << " | " << timeCounter + 1 << endl;
 
-        // Increment the serviced time for the task in the current thread if it's running
+        // If there is a task to execute
         if (taskExists) {
+            // Execute the task
             incrementCurrentTask(currentThreadIndex);
+            currentQuantum++;  // Increment quantum time
 
             // Check if the task is complete
+            auto& currentThread = threads[currentThreadIndex];
             Task* currentTask = currentThread.taskQueue.top();
             if (currentTask->getServiced() == currentTask->getRequested()) {
                 currentThread.taskQueue.pop();
                 servicedCounter++;
+                // Move to next thread and reset quantum
+                currentThreadIndex = (currentThreadIndex + 1) % threads.size();
+                currentQuantum = 0;
+            } else if (currentQuantum >= timeQuantum) {
+                // Time quantum expired, preempt and move to next thread
+                currentThreadIndex = (currentThreadIndex + 1) % threads.size();
+                currentQuantum = 0;
             }
+        } else {
+            // No task exists in the current thread, move to next thread
+            currentThreadIndex = (currentThreadIndex + 1) % threads.size();
+            // No need to reset currentQuantum here
         }
-
-        // Move to the next thread in round-robin order
-        currentThreadIndex = (currentThreadIndex + 1) % threads.size();
 
         timeCounter++;
     }
