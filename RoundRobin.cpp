@@ -6,27 +6,32 @@
  * Creates 4 threads using "Queues" to simulate a round robin scheduler.
  * 
  * @date 11/5/24
- * @author Fiya Clerget
+ * @author Fiya Clerget, Marcello Novak
  */
 
-#include <algorithm>  // For find_if
 #include "RoundRobin.h"
 #include "ASCII.h"
 using namespace std;
 
 // Constructor initializes threads and next release times
-RoundRobinScheduler::RoundRobinScheduler() : currentThreadIndex(0) {  // Initialize currentThreadIndex here
-    // Initialize threads with their respective lengths, queues, and IDs
+RoundRobinScheduler::RoundRobinScheduler() : currentThreadIndex(0) {
+    // Initialize threads with their respective sizes, queues, and IDs
     threads = {
-        {Queue(), 1, 1, 4},   // Thread 1: size 1, length 4
-        {Queue(), 1, 2, 4},   // Thread 2: size 1, length 4
-        {Queue(), 1, 4, 4},   // Thread 3: size 1, length 4
-        {Queue(), 1, 6, 4}    // Thread 4: size 1, length 4
+        // Starvation Example
+        // {Queue(), 1, 1, 8},   // Thread 1: size 1, freq 8
+        // {Queue(), 2, 1, 8},   // Thread 2: size 1, freq 8
+        // {Queue(), 3, 4, 8},   // Thread 3: size 4, freq 8  poor baby
+        // {Queue(), 4, 1, 8}    // Thread 4: size 1, freq 8
+
+        {Queue(), 1, 1, 24},   // Thread 1: size 1, freq 8
+        {Queue(), 2, 2, 24},   // Thread 2: size 1, freq 8
+        {Queue(), 3, 4, 24},   // Thread 3: size 4, freq 8  poor baby
+        {Queue(), 4, 6, 24}    // Thread 4: size 1, freq 8
     };
 
-    // Set initial next release times based on the threads' lengths
+    // Set initial next release times based on the threads' frequencies
     for (const auto& thread : threads) {
-        nextReleaseTimes.push_back(thread.length);
+        nextReleaseTimes.push_back(thread.frequency);
     }
 }
 
@@ -49,40 +54,40 @@ void RoundRobinScheduler::runExampleStructured() {
         // Add tasks based on release times
         for (size_t i = 0; i < threads.size(); ++i) {
             if (timeCounter >= nextReleaseTimes[i]) {
-                addTask(threads[i].priority);
+                addTask(i);  // Pass thread index instead of size
                 nextReleaseTimes[i] += threads[i].frequency;
                 taskCounter++;
                 taskCreated[i] = true;  // Mark that a task was created for this thread
             }
         }
 
-        // Only service the current thread in round-robin order
+        // Only service the current thread in strict round-robin order
         auto& currentThread = threads[currentThreadIndex];
-        Task* currentTask = (!currentThread.taskQueue.isEmpty()) ? currentThread.taskQueue.top() : nullptr;
+        bool taskExists = !currentThread.taskQueue.isEmpty();
 
         // Display thread statuses
         for (size_t i = 0; i < threads.size(); ++i) {
             bool isRunning = (i == currentThreadIndex);
             bool isCreated = taskCreated[i];
+            bool hasTask = !threads[i].taskQueue.isEmpty();
 
-            if (isRunning && isCreated) {
+            if (isRunning && isCreated && hasTask) {
                 // Turquoise if a task is both created and executed in this time unit
                 setColor(COLOR_TURQUOISE);
                 cout << "▓▒░";
-            } else if (isRunning) {
-                if (currentTask != nullptr) {
-                    // Green if this thread is currently running a task
-                    setColor(COLOR_GREEN);
-                } else {
-                    // Gray if this thread is currently selected but has no task
-                    setColor(COLOR_GRAY);
-                }
+            } else if (isRunning && hasTask) {
+                // Green if this thread is currently running a task
+                setColor(COLOR_GREEN);
+                cout << "▓▒░";
+            } else if (isRunning && !hasTask) {
+                // Orange if this thread is selected but has no task (idle)
+                setColor(COLOR_ORANGE);
                 cout << "▓▒░";
             } else if (isCreated && !isRunning) {
                 // Yellow if a task is created but not running
                 setColor(COLOR_YELLOW);
                 cout << "▓▒░";
-            } else if (!threads[i].taskQueue.isEmpty()) {
+            } else if (hasTask) {
                 // Red for other threads with tasks waiting but not running
                 setColor(COLOR_RED);
                 cout << "▓▒░";
@@ -96,16 +101,18 @@ void RoundRobinScheduler::runExampleStructured() {
         cout << " | " << (timeCounter % frameBoundary) + 1 << endl;
 
         // Increment the serviced time for the task in the current thread if it's running
-        if (currentTask != nullptr) {
-            incrementTopTask(currentThread.priority);
+        if (taskExists) {
+            incrementCurrentTask(currentThreadIndex);
 
+            // Check if the task is complete
+            Task* currentTask = currentThread.taskQueue.top();
             if (currentTask->getServiced() == currentTask->getRequested()) {
                 currentThread.taskQueue.pop();
                 servicedCounter++;
             }
         }
 
-        // Move to the next thread in round-robin order, even if the current thread had no task
+        // Move to the next thread in round-robin order
         currentThreadIndex = (currentThreadIndex + 1) % threads.size();
 
         timeCounter++;
@@ -116,27 +123,18 @@ void RoundRobinScheduler::runExampleStructured() {
 }
 
 // Add a new task to the specified thread's queue
-void RoundRobinScheduler::addTask(int length) {
-    // Find the thread by priority and get its length as requested time
-    auto it = find_if(threads.begin(), threads.end(), [length](const Thread& t) {
-        return t.length == length;
-    });
-
-    if (it != threads.end()) {
-        int requestedTime = it->length;  // Use the thread's length as the requested time for the task
-        it->taskQueue.push(Task(requestedTime));
-    }
+void RoundRobinScheduler::addTask(size_t threadIndex) {
+    // Get the thread by index and push a task to its queue
+    Thread& thread = threads[threadIndex];
+    int requestedTime = thread.size;  // Use the thread's size as the requested time for the task
+    thread.taskQueue.push(Task(requestedTime));
 }
 
-// Increment the `serviced` field of the top task in the specified thread
-void RoundRobinScheduler::incrementTopTask(int length) {
-    // Find the thread by priority
-    auto it = find_if(threads.begin(), threads.end(), [length](const Thread& t) {
-        return t.length == length;
-    });
-
-    if (it != threads.end() && !it->taskQueue.isEmpty()) {
-        Task* topTask = it->taskQueue.top();
+// Increment the `serviced` field of the task in the specified thread
+void RoundRobinScheduler::incrementCurrentTask(size_t index) {
+    // Get the thread by index and increment its top task if it has one
+    if (!threads[index].taskQueue.isEmpty()) {
+        Task* topTask = threads[index].taskQueue.top();
         topTask->setServiced(topTask->getServiced() + 1);
     }
 }

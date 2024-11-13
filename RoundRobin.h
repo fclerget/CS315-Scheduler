@@ -7,7 +7,7 @@
  * Creates 4 threads using "Queues" to simulate a round robin scheduler.
  * 
  * @date 11/5/24
- * @author Fiya Clerget
+ * @author Fiya Clerget, Marcello Novak
  */
 
 #include "Queue.h"
@@ -31,9 +31,8 @@ class RoundRobinScheduler {
         vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
         vector<int> nextReleaseTimes; // Tracks the next release time for each thread
 
-        void addTask(int length);
-        void incrementTopTask(int length);  // New method to increment top task for a given thread
+        void addTask(size_t threadIndex);
+        void incrementCurrentTask(size_t index); 
 
-        int currentThreadIndex = 0;  // Index of the current thread being serviced
+        size_t currentThreadIndex = 0;  // Index of the current thread being serviced
 };
-

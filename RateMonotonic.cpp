@@ -134,7 +134,7 @@ void RateMonotonicScheduler::addTask(int priority) {
     });
 
     if (it != threads.end()) {
-        int requestedTime = it->length;
+        int requestedTime = it->size;
         it->taskQueue.push(Task(requestedTime));
     }
 }
