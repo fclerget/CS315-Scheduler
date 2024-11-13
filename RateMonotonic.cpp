@@ -15,22 +15,31 @@
 
 using namespace std;
 
-// Constructor initializes threads and next release times
-RateMonotonicScheduler::RateMonotonicScheduler() {
-    // Initialize threads with their respective frequencies, queues, and IDs
-    threads = {
-        {Queue(), 1, 1, 3},   // Thread 1: size 1, frequency 3
-        {Queue(), 2, 2, 6},   // Thread 2: size 1, frequency 6
-        {Queue(), 3, 2, 12},  // Thread 3: size 2, frequency 12
-        {Queue(), 4, 4, 24}   // Thread 4: size 4, frequency 24
-    };
+// Constructor initializes threads and next release times based on example type
+RateMonotonicScheduler::RateMonotonicScheduler(ExampleType exampleType) {
+    if (exampleType == ExampleType::STRUCTURED) {
+        // Structured example initialization
+        threads = {
+            {Queue(), 1, 1, 3},   // Thread 1: priority 1, size 1, frequency 3
+            {Queue(), 2, 2, 6},   // Thread 2: priority 2, size 2, frequency 6
+            {Queue(), 3, 2, 12},  // Thread 3: priority 3, size 2, frequency 12
+            {Queue(), 4, 4, 24}   // Thread 4: priority 4, size 4, frequency 24
+        };
+    } else if (exampleType == ExampleType::STARVED) {
+        // Starved example initialization
+        threads = {
+            {Queue(), 1, 1, 3},   // Thread 1: priority 1, size 1, frequency 3
+            {Queue(), 2, 2, 6},   // Thread 2: priority 2, size 2, frequency 6
+            {Queue(), 3, 4, 12},  // Thread 3: priority 3, size 4, frequency 12
+            {Queue(), 4, 4, 24}   // Thread 4: priority 4, size 4, frequency 24
+        };
+    }
 
     // Set initial next release times based on the threads' frequencies
     for (const auto& thread : threads) {
         nextReleaseTimes.push_back(thread.frequency);
     }
 }
-
 // Destructor to clear the queues in each thread
 RateMonotonicScheduler::~RateMonotonicScheduler() {
     for (auto& thread : threads) {
@@ -41,7 +50,7 @@ RateMonotonicScheduler::~RateMonotonicScheduler() {
 }
 
 // Main scheduler loop with scrolling thread status display
-void RateMonotonicScheduler::runExampleStructured() {
+void RateMonotonicScheduler::runExample() {
     const int frameBoundary = 24;
     int taskCounter = 0;
     int servicedCounter = 0;

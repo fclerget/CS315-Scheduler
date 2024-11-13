@@ -20,19 +20,21 @@ using namespace std;
 
 class RoundRobinScheduler {
     public:
+        enum class ExampleType { STRUCTURED, STARVED };
+
         // Constructor and Destructor
-        RoundRobinScheduler();
+        RoundRobinScheduler(ExampleType exampleType);
         ~RoundRobinScheduler();
 
-        // Functions to run the examples
-        void runExampleStructured();   
-        
+        // Function to run the example
+        void runExample();
+
     protected:
         vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
         vector<int> nextReleaseTimes; // Tracks the next release time for each thread
 
         void addTask(size_t threadIndex);
-        void incrementCurrentTask(size_t index); 
+        void incrementCurrentTask(size_t index);
 
         size_t currentThreadIndex = 0;  // Index of the current thread being serviced
 };

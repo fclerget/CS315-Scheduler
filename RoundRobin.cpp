@@ -13,21 +13,25 @@
 #include "ASCII.h"
 using namespace std;
 
-// Constructor initializes threads and next release times
-RoundRobinScheduler::RoundRobinScheduler() : currentThreadIndex(0) {
-    // Initialize threads with their respective sizes, queues, and IDs
-    threads = {
-        // Starvation Example
-        // {Queue(), 1, 1, 8},   // Thread 1: size 1, freq 8
-        // {Queue(), 2, 1, 8},   // Thread 2: size 1, freq 8
-        // {Queue(), 3, 4, 8},   // Thread 3: size 4, freq 8  poor baby
-        // {Queue(), 4, 1, 8}    // Thread 4: size 1, freq 8
-
-        {Queue(), 1, 1, 24},   // Thread 1: size 1, freq 8
-        {Queue(), 2, 2, 24},   // Thread 2: size 1, freq 8
-        {Queue(), 3, 4, 24},   // Thread 3: size 4, freq 8  poor baby
-        {Queue(), 4, 6, 24}    // Thread 4: size 1, freq 8
-    };
+// Constructor initializes threads and next release times based on example type
+RoundRobinScheduler::RoundRobinScheduler(ExampleType exampleType) : currentThreadIndex(0) {
+    if (exampleType == ExampleType::STRUCTURED) {
+        // Structured example initialization
+        threads = {
+            {Queue(), 1, 1, 24},   // Thread 1: size 1, freq 24
+            {Queue(), 2, 2, 24},   // Thread 2: size 2, freq 24
+            {Queue(), 3, 4, 24},   // Thread 3: size 4, freq 24
+            {Queue(), 4, 6, 24}    // Thread 4: size 6, freq 24
+        };
+    } else if (exampleType == ExampleType::STARVED) {
+        // Starved example initialization
+        threads = {
+            {Queue(), 1, 1, 8},   // Thread 1: size 1, freq 8
+            {Queue(), 2, 1, 8},   // Thread 2: size 1, freq 8
+            {Queue(), 3, 4, 8},   // Thread 3: size 4, freq 8
+            {Queue(), 4, 1, 8}    // Thread 4: size 1, freq 8
+        };
+    }
 
     // Set initial next release times based on the threads' frequencies
     for (const auto& thread : threads) {
@@ -36,7 +40,7 @@ RoundRobinScheduler::RoundRobinScheduler() : currentThreadIndex(0) {
 }
 
 // Main scheduler loop with scrolling thread status display
-void RoundRobinScheduler::runExampleStructured() {
+void RoundRobinScheduler::runExample() {
     const int frameBoundary = 24;
     int taskCounter = 0;
     int servicedCounter = 0;

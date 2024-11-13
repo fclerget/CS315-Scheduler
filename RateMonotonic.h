@@ -19,19 +19,19 @@ using namespace std;
 
 class RateMonotonicScheduler {
     public:
+        enum class ExampleType { STRUCTURED, STARVED };
+
         // Constructor and Destructor
-        RateMonotonicScheduler();
+        RateMonotonicScheduler(ExampleType exampleType);
         ~RateMonotonicScheduler();
 
         // Functions to run the examples
-        void runExampleStructured(); 
-        void runExampleRandom();    
-        
+        void runExample();
+
     protected:
         vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
         vector<int> nextReleaseTimes; // Tracks the next release time for each thread
 
-        void addTask(int threadID);
-        void incrementTopTask(int threadID);  // New method to increment top task for a given thread
-    
+        void addTask(int priority);
+        void incrementTopTask(int priority);
 };
