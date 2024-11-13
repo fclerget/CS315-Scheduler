@@ -33,6 +33,7 @@ class RoundRobinScheduler {
 
         void addTask(int length);
         void incrementTopTask(int length);  // New method to increment top task for a given thread
-    
+
+        int currentThreadIndex = 0;  // Index of the current thread being serviced
 };
 
