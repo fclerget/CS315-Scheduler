@@ -15,6 +15,7 @@
 #include "Queue.h"
 #include "RateMonotonic.h" // Include Rate Monotonic Scheduler
 #include "RoundRobin.h"    // Include Round Robin Scheduler
+#include "ASCII.h"         // Include ASCII color codes
 #include <iostream> 
 
 void displayMenu() {
@@ -23,6 +24,7 @@ void displayMenu() {
     std::cout << "Q - Queue" << std::endl;
     std::cout << "1 - Rate Monotonic" << std::endl;
     std::cout << "2 - Round Robin" << std::endl;
+    std::cout << "K - Print Color Key" << std::endl;  // Added option
 }
 
 void displayRateMonotonicOptions() {
@@ -35,6 +37,45 @@ void displayRoundRobinOptions() {
     std::cout << "Select a Round Robin example to run:" << std::endl;
     std::cout << "1 - Structured" << std::endl;
     std::cout << "2 - Starved" << std::endl;
+}
+
+void displayColorKey() {
+    std::cout << "\nColor Key:" << std::endl;
+
+    setColor(COLOR_GREEN);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Running task" << std::endl;
+
+    setColor(COLOR_RED);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Preempted task" << std::endl;
+
+    setColor(COLOR_GRAY);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": No task" << std::endl;
+
+    setColor(COLOR_BLUE);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Task created" << std::endl;
+
+    setColor(COLOR_TURQUOISE);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Task created and executed" << std::endl;
+
+    setColor(COLOR_YELLOW);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Task created but preempted" << std::endl;
+
+    setColor(COLOR_ORANGE);
+    std::cout << "▓▒░";
+    setColor(COLOR_WHITE);
+    std::cout << ": Time unit run without task\n" << std::endl;
 }
 
 int main() {
@@ -103,6 +144,9 @@ int main() {
                 }
             }
             validInput = true;
+        } else if (choice == 'K' || choice == 'k') {
+            displayColorKey();
+            // Continue the loop without setting validInput to true
         } else {
             std::cout << "Invalid input. Please enter a valid option." << std::endl;
         }
