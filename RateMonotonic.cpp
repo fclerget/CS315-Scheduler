@@ -6,6 +6,7 @@
  * Uses 4 threads using "Queues" to simulate a rate monotonic scheduler.
  * 
  * @date 10/31/24
+ * @authors Fiya Clerget, Marcello Novak
  */
 
 #include "RateMonotonic.h"
@@ -36,13 +37,13 @@ RateMonotonicScheduler::RateMonotonicScheduler(ExampleType exampleType) {
     }
 
     // Set initial next release times based on the threads' frequencies
-    for (const auto& thread : threads) {
+    for (const Thread& thread : threads) {
         nextReleaseTimes.push_back(thread.frequency);
     }
 }
 // Destructor to clear the queues in each thread
 RateMonotonicScheduler::~RateMonotonicScheduler() {
-    for (auto& thread : threads) {
+    for (Thread& thread : threads) {
         while (!thread.taskQueue.isEmpty()) {
             thread.taskQueue.pop();
         }
@@ -59,7 +60,7 @@ void RateMonotonicScheduler::runExample() {
     while (timeCounter < 10008) {
         if (timeCounter % frameBoundary == 0) {
             setColor(COLOR_WHITE);
-            cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
+            cout << "█▓▒░█▓▒░█▓▒░█▓▒░ | New Frame\n";
         }
 
         // Track which threads have new tasks created in this time unit
@@ -81,7 +82,7 @@ void RateMonotonicScheduler::runExample() {
 
         // Find the highest-priority task
         for (size_t i = 0; i < threads.size(); ++i) {
-            auto& thread = threads[i];
+            Thread& thread = threads[i];
             if (!thread.taskQueue.isEmpty()) {
                 Task* topTask = thread.taskQueue.top();
                 if (highestPriorityTask == nullptr || thread.priority < threads[static_cast<size_t>(highestPriorityThreadIndex)].priority) {
@@ -99,23 +100,23 @@ void RateMonotonicScheduler::runExample() {
             if (isRunning && isCreated) {
                 // Turquoise if a task is both created and executed in this time unit
                 setColor(COLOR_TURQUOISE);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (isRunning) {
                 // Green if this is the highest-priority task running
                 setColor(COLOR_GREEN);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (isCreated && !isRunning) {
                 // Purple if a task is created but preempted by a higher-priority task
                 setColor(COLOR_YELLOW);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (!threads[i].taskQueue.isEmpty() && i > static_cast<size_t>(highestPriorityThreadIndex)) {
                 // Red only if a lower-priority task is preempted (higher threads are never preempted by lower threads)
                 setColor(COLOR_RED);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else {
                 // Gray if no tasks are in the queue or the thread isn't preempted
                 setColor(COLOR_GRAY);
-                cout << "░░░";
+                cout << "░░░░";
             }
         }
         setColor(COLOR_WHITE);

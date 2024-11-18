@@ -11,6 +11,7 @@
 
 #include "RoundRobin.h"
 #include "ASCII.h"
+#include "SchedulerCommon.h"
 using namespace std;
 
 // Constructor initializes threads and next release times based on example type
@@ -18,23 +19,23 @@ RoundRobinScheduler::RoundRobinScheduler(ExampleType exampleType) : currentThrea
     if (exampleType == ExampleType::STRUCTURED) {
         // Structured example initialization
         threads = {
-            {Queue(), 1, 2, 24},   // Thread 1: size 1, freq 24
-            {Queue(), 2, 4, 24},   // Thread 2: size 2, freq 24
-            {Queue(), 3, 6, 24},   // Thread 3: size 4, freq 24
-            {Queue(), 4, 8, 24}    // Thread 4: size 6, freq 24
+            {Queue(), 1, 2, 24},   // Thread 1: size 2, freq 24
+            {Queue(), 2, 4, 24},   // Thread 2: size 4, freq 24
+            {Queue(), 3, 6, 24},   // Thread 3: size 6, freq 24
+            {Queue(), 4, 8, 24}    // Thread 4: size 8, freq 24
         };
     } else if (exampleType == ExampleType::STARVED) {
         // Starved example initialization
         threads = {
             {Queue(), 1, 1, 8},   // Thread 1: size 1, freq 8
-            {Queue(), 2, 3, 8},   // Thread 2: size 1, freq 8
-            {Queue(), 3, 2, 8},   // Thread 3: size 4, freq 8
-            {Queue(), 4, 8, 8}    // Thread 4: size 1, freq 8
+            {Queue(), 2, 3, 8},   // Thread 2: size 3, freq 8
+            {Queue(), 3, 2, 8},   // Thread 3: size 2, freq 8
+            {Queue(), 4, 8, 8}    // Thread 4: size 8, freq 8
         };
     }
 
     // Set initial next release times based on the threads' frequencies
-    for (const auto& thread : threads) {
+    for (const Thread& thread : threads) {
         nextReleaseTimes.push_back(thread.frequency);
     }
 }
@@ -52,7 +53,7 @@ void RoundRobinScheduler::runExample() {
     while (timeCounter < 10008) {
         if (timeCounter % frameBoundary == 0) {
             setColor(COLOR_WHITE);
-            cout << "▓▒░▓▒░▓▒░▓▒░ | New Frame\n";
+            cout << "█▓▒░█▓▒░█▓▒░█▓▒░ | New Frame\n";
         }
 
         // Track which threads have new tasks created in this time unit
@@ -72,7 +73,7 @@ void RoundRobinScheduler::runExample() {
 
         // Find the next thread with a task
         while (checkedThreads < threads.size()) {
-            auto& currentThread = threads[currentThreadIndex];
+            Thread& currentThread = threads[currentThreadIndex];
             taskExists = !currentThread.taskQueue.isEmpty();
 
             if (taskExists) {
@@ -100,27 +101,27 @@ void RoundRobinScheduler::runExample() {
             if (isRunning && isCreated && hasTask) {
                 // Turquoise if a task is both created and executed in this time unit
                 setColor(COLOR_TURQUOISE);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (isRunning && hasTask) {
                 // Green if this thread is currently running a task
                 setColor(COLOR_GREEN);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (isRunning && !hasTask) {
                 // Orange if this thread is selected but has no task (idle)
                 setColor(COLOR_ORANGE);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (isCreated && !isRunning) {
                 // Yellow if a task is created but not running
                 setColor(COLOR_YELLOW);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else if (hasTask) {
                 // Red for other threads with tasks waiting but not running
                 setColor(COLOR_RED);
-                cout << "▓▒░";
+                cout << "█▓▒░";
             } else {
                 // Gray if no tasks are in the queue or the thread isn't active
                 setColor(COLOR_GRAY);
-                cout << "▒▒▒";
+                cout << "░░░░";
             }
         }
         setColor(COLOR_WHITE);
@@ -133,7 +134,7 @@ void RoundRobinScheduler::runExample() {
             currentQuantum++;  // Increment quantum time
 
             // Check if the task is complete
-            auto& currentThread = threads[currentThreadIndex];
+            Thread& currentThread = threads[currentThreadIndex];
             Task* currentTask = currentThread.taskQueue.top();
             if (currentTask->getServiced() == currentTask->getRequested()) {
                 currentThread.taskQueue.pop();
@@ -178,7 +179,7 @@ void RoundRobinScheduler::incrementCurrentTask(size_t index) {
 
 // Destructor to clear the queues in each thread
 RoundRobinScheduler::~RoundRobinScheduler() {
-    for (auto& thread : threads) {
+    for (Thread& thread : threads) {
         while (!thread.taskQueue.isEmpty()) {
             thread.taskQueue.pop();
         }

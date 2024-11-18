@@ -19,6 +19,14 @@
 using namespace std;
 
 class RoundRobinScheduler {
+    protected:
+        vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
+        vector<int> nextReleaseTimes; // Tracks the next release time for each thread
+
+        void addTask(unsigned long long threadIndex);
+        void incrementCurrentTask(unsigned long long index);
+
+        unsigned long long currentThreadIndex = 0;  // Index of the current thread being serviced
     public:
         enum class ExampleType { STRUCTURED, STARVED };
 
@@ -29,12 +37,4 @@ class RoundRobinScheduler {
         // Function to run the example
         void runExample();
 
-    protected:
-        vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
-        vector<int> nextReleaseTimes; // Tracks the next release time for each thread
-
-        void addTask(size_t threadIndex);
-        void incrementCurrentTask(size_t index);
-
-        size_t currentThreadIndex = 0;  // Index of the current thread being serviced
 };

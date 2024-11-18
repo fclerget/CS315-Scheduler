@@ -24,11 +24,3 @@ public:
 	void setServiced(int serv);
 };
 
-// PriorityTask class definition, inherits from Task
-class PriorityTask : protected Task{
-private: 
-	int frequency;  // aka priority
-public:
-	PriorityTask(int req, int freq);
-	int getFrequency();
-};

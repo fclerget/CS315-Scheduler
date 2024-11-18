@@ -20,6 +20,9 @@ struct QueueNode {
 };
 
 class Queue {
+private:
+    QueueNode* head;  // Front of the queue
+    QueueNode* tail;  // End of the queue
 public:
 
     // Constructor and Destructor
@@ -35,7 +38,4 @@ public:
 
     void printQueue();  // Function to print the queue
     void runExample();  // Function to run the example
-private:
-    QueueNode* head;  // Front of the queue
-    QueueNode* tail;  // End of the queue
 };

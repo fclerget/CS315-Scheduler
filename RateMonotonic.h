@@ -6,7 +6,7 @@
  * Uses 4 threads using "Queues" to simulate a rate monotonic scheduler.
  * 
  * @date 10/31/24
- * @author Marcello Novak
+ * @author Fiya Clerget, Marcello Novak
  */
 
 #pragma once
@@ -18,6 +18,12 @@
 using namespace std;
 
 class RateMonotonicScheduler {
+    protected:
+        vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
+        vector<int> nextReleaseTimes; // Tracks the next release time for each thread
+
+        void addTask(int priority);
+        void incrementTopTask(int priority);
     public:
         enum class ExampleType { STRUCTURED, STARVED };
 
@@ -28,10 +34,5 @@ class RateMonotonicScheduler {
         // Functions to run the examples
         void runExample();
 
-    protected:
-        vector<Thread> threads;       // Stores each thread with its queue, frequency, and ID
-        vector<int> nextReleaseTimes; // Tracks the next release time for each thread
-
-        void addTask(int priority);
-        void incrementTopTask(int priority);
+    
 };

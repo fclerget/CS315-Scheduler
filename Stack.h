@@ -21,6 +21,9 @@ struct StackNode {
 };
 
 class Stack {
+private:
+    StackNode* head;  // Top of the stack
+    StackNode* tail;  // Bottom of the stack (new)
 public:
 
     // Constructor and Destructor
@@ -36,7 +39,5 @@ public:
 
     void printStack();  // Function to print the stack
     void runExample();  // Function to run the example
-private:
-    StackNode* head;  // Top of the stack
-    StackNode* tail;  // Bottom of the stack (new)
+
 };

@@ -26,11 +26,3 @@ int Task:: getServiced() {
 void Task:: setServiced(int serv) {
 	serviced = serv;
 }
-
-// PriorityTask constructor
-PriorityTask:: PriorityTask(int req, int freq) : Task(req), frequency(freq) {}
-
-// Getter method for PriorityTask class 
-int PriorityTask:: getFrequency() {
-	return frequency;
-}

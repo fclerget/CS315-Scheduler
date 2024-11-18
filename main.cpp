@@ -25,6 +25,7 @@ void displayMenu() {
     std::cout << "1 - Rate Monotonic" << std::endl;
     std::cout << "2 - Round Robin" << std::endl;
     std::cout << "K - Print Color Key" << std::endl;  // Added option
+    std::cout << "E - Exit" << std::endl;
 }
 
 void displayRateMonotonicOptions() {
@@ -43,37 +44,37 @@ void displayColorKey() {
     std::cout << "\nColor Key:" << std::endl;
 
     setColor(COLOR_GREEN);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Running task" << std::endl;
 
     setColor(COLOR_RED);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Preempted task" << std::endl;
 
     setColor(COLOR_GRAY);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": No task" << std::endl;
 
     setColor(COLOR_BLUE);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Task created" << std::endl;
 
     setColor(COLOR_TURQUOISE);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Task created and executed" << std::endl;
 
     setColor(COLOR_YELLOW);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Task created but preempted" << std::endl;
 
     setColor(COLOR_ORANGE);
-    std::cout << "▓▒░";
+    std::cout << "█▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Time unit run without task\n" << std::endl;
 }
@@ -85,7 +86,7 @@ int main() {
     bool validInput = false;
 
     // Display the main menu and get user input with validation
-    while (!validInput) {
+    while (!validInput || choice != 'E' || choice != 'e') {
         displayMenu();
         std::cout << "Enter your choice: ";
         std::cin >> choice;
@@ -147,6 +148,9 @@ int main() {
         } else if (choice == 'K' || choice == 'k') {
             displayColorKey();
             // Continue the loop without setting validInput to true
+        } else if (choice == 'E' || choice == 'e'){
+            std::cout << "Exiting Program." << std::endl;
+            break;
         } else {
             std::cout << "Invalid input. Please enter a valid option." << std::endl;
         }
