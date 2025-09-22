@@ -44,7 +44,7 @@ void displayColorKey() {
     std::cout << "\nColor Key:" << std::endl;
 
     setColor(COLOR_GREEN);
-    std::cout << "█▓▒░";
+    std::cout << "▓▒░";
     setColor(COLOR_WHITE);
     std::cout << ": Running task" << std::endl;
 
